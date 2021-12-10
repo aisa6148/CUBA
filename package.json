@@ -1,0 +1,46 @@
+{
+    "name": "core-bot",
+    "version": "1.0.0",
+    "description": "A bot that demonstrates core AI capabilities",
+    "author": "Microsoft",
+    "license": "MIT",
+    "main": "index.js",
+    "scripts": {
+        "start": "node ./index.js",
+        "lint": "eslint .",
+        "test": "nyc mocha tests/**/*.test.js",
+        "build": "npm run build-ts && npm run lint",
+        "watch": "concurrently  \"[{name}]\" -n \"TypeScript,Node\" -c \"yellow.bold,green.bold\" \"npm run watch-node\"",
+        "watch-node": "nodemon dist/index.js",
+        "watch-ts": "npm run lint-fix && npm run copy-static-assets && tsc -w"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Microsoft/BotBuilder-Samples.git"
+    },
+    "dependencies": {
+        "@microsoft/recognizers-text-data-types-timex-expression": "1.1.4",
+        "bluebird": "^3.5.3",
+        "botbuilder": "~4.15.0",
+        "botbuilder-ai": "~4.15.0",
+        "botbuilder-dialogs": "~4.15.0",
+        "botbuilder-testing": "~4.15.0",
+        "concurrently": "^6.4.0",
+        "documentdb": "^1.15.3",
+        "dotenv": "^8.2.0",
+        "moment-timezone": "~0.5.33",
+        "redis": "^2.8.0",
+        "restify": "~8.5.1"
+    },
+    "devDependencies": {
+        "eslint": "^7.0.0",
+        "eslint-config-standard": "^14.1.1",
+        "eslint-plugin-import": "^2.20.2",
+        "eslint-plugin-node": "^11.1.0",
+        "eslint-plugin-promise": "^4.2.1",
+        "eslint-plugin-standard": "^4.0.1",
+        "mocha": "^7.1.2",
+        "nodemon": "~2.0.4",
+        "nyc": "^15.0.1"
+    }
+}
