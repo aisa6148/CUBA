@@ -4,15 +4,15 @@
     "description": "A bot that demonstrates core AI capabilities",
     "author": "Microsoft",
     "license": "MIT",
-    "main": "app.js",
+    "main": "index.js",
     "scripts": {
-        "watch": "nodemon ./app.js",
+        "watch": "nodemon ./index.js",
         "lint": "eslint .",
-        "start": "node ./app.js"
+        "start": "node ./index.js"
     },
     "repository": {
         "type": "git",
-        "url": "https://registry.npmjs.org"
+        "url": "https://github.com/Microsoft/BotBuilder-Samples.git"
     },
     "dependencies": {
         "@microsoft/recognizers-text-data-types-timex-expression": "1.1.4",
