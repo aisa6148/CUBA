@@ -6,9 +6,18 @@ const { MessageFactory, InputHints } = require('botbuilder');
 const { LuisRecognizer } = require('botbuilder-ai');
 const { ComponentDialog, DialogSet, DialogTurnStatus, TextPrompt, WaterfallDialog } = require('botbuilder-dialogs');
 const helperfunction = require('../helper.functions');
+const { CalendarDialog } = require('../dialogs/calendarDialog');
+const { WeatherDialog } = require('../dialogs/weatherDialog');
+const { DirectionsDialog } = require('../dialogs/directionsDialog');
 const { LuisMap } = require('./luisMap.dialog')
 
 const MAIN_WATERFALL_DIALOG = 'mainWaterfallDialog';
+
+const findTerm = (string, substring) => {
+    if (string.includes(substring)){
+      return string;
+    }
+};
 
 class MainDialog extends ComponentDialog {
     constructor(luisRecognizer, bookingDialog) {
@@ -26,6 +35,9 @@ class MainDialog extends ComponentDialog {
             .addDialog(new WaterfallDialog(MAIN_WATERFALL_DIALOG, [
                 this.actStep.bind(this)
             ]));
+        this.addDialog(new CalendarDialog('CalendarDialog'));
+        this.addDialog(new WeatherDialog('WeatherDialog'));
+        this.addDialog(new DirectionsDialog('DirectionsDialog'));
 
         this.initialDialogId = MAIN_WATERFALL_DIALOG;
     }
@@ -37,7 +49,6 @@ class MainDialog extends ComponentDialog {
      * @param {*} accessor
      */
     async run(turnContext, accessor) {
-        console.log("here")
         const dialogSet = new DialogSet(accessor);
         dialogSet.add(this);
 
@@ -86,13 +97,21 @@ class MainDialog extends ComponentDialog {
                     ]
                   );
                 break;
-            
+            case findTerm(LuisRecognizer.topIntent(luisResult), 'Calendar'): {
+                    return await stepContext.replaceDialog('CalendarDialog');
+                }
+            case findTerm(LuisRecognizer.topIntent(luisResult), 'Weather'): {
+                    return await stepContext.replaceDialog('WeatherDialog');
+                }
             case 'BuffCardBalance': {
+                await stepContext.context.sendActivity('On it! Fetching your details...')
+                await new Promise(resolve => setTimeout(() => resolve(
+                    stepContext.context.sendActivity('Name: Aishwarya Satwani\n\nBalance: $75.23')
+                ), 6000));                 
                 break;
             }
-    
-            case 'GetWeather': {
-                break;
+            case 'GetDirections': {
+                return await stepContext.replaceDialog('DirectionsDialog');
             }
     
             default: {

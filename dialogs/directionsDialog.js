@@ -5,16 +5,16 @@ const {
     DialogTurnStatus
   } = require('botbuilder-dialogs');
   
-  class Calendar extends ComponentDialog {
+  class Directions extends ComponentDialog {
     constructor(dialogId) {
       super(dialogId);
   
       // validate what was passed in
       if (!dialogId) throw new Error('Missing parameter.  dialogId is required');
-      this.addDialog(new WaterfallDialog(dialogId, [this.lookForCalendarEvents.bind(this)]));
+      this.addDialog(new WaterfallDialog(dialogId, [this.lookForDirectionsEvents.bind(this)]));
     }
   
-    async lookForCalendarEvents(step) {
+    async lookForDirectionsEvents(step) {
       return await await step.context.sendActivity("Kays");
     }
   
@@ -29,5 +29,5 @@ const {
     }
   }
   
-  module.exports.CalendarDialog = Calendar;
+  module.exports.DirectionsDialog = Directions;
   
