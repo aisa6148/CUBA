@@ -6,8 +6,8 @@ const {
 } = require('botbuilder-dialogs');
 const { CalendarDialog } = require('../dialogs/calendarDialog');
 const { WeatherDialog } = require('../dialogs/weatherDialog');
-const { DirectionsDialog } = require('../dialogs/directionsDialog');
 const { BuffCardBalanceDialog } = require('../dialogs/buffCardBalanceDialog');
+const { GoogleMapAPIDialog } = require('../dialogs/GoogleMapAPI');
 
 class Redirect extends ComponentDialog {
   constructor(dialogId) {
@@ -18,15 +18,15 @@ class Redirect extends ComponentDialog {
     this.addDialog(new WaterfallDialog(dialogId, [this.redirect.bind(this)]));
     this.addDialog(new CalendarDialog('CalendarDialog'));
     this.addDialog(new WeatherDialog('WeatherDialog'));
-    this.addDialog(new DirectionsDialog('DirectionsDialog'));
     this.addDialog(new BuffCardBalanceDialog('BuffCardBalanceDialog'));
+    this.addDialog(new GoogleMapAPIDialog('GoogleMapAPIDialog'));
   }
 
   async redirect(step) {
     const { dialogId, entities } = step.options;
     if (!dialogId || !this.findDialog(dialogId)) {
       const didntUnderstandMessageText = `Sorry, I didn't get that. Please try asking in a different way`;
-                await stepContext.context.sendActivity(didntUnderstandMessageText);
+                await step.context.sendActivity(didntUnderstandMessageText);
     }
     return await step.replaceDialog(dialogId, { entities });
   }

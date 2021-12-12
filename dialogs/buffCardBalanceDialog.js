@@ -15,7 +15,10 @@ const {
     }
   
     async lookForBuffCardBalanceEvents(step) {
-      return await await step.context.sendActivity("Kays");
+      await stepContext.context.sendActivity('On it! Fetching your details...')
+      return await new Promise(resolve => setTimeout(() => resolve(
+          stepContext.context.sendActivity('Name: Aishwarya Satwani\n\nBalance: $75.23')
+      ), 6000)); 
     }
   
     async run(turnContext, accessor) {

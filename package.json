@@ -24,8 +24,10 @@
         "concurrently": "^6.4.0",
         "documentdb": "^1.15.3",
         "dotenv": "^8.2.0",
+        "googleapis": "^92.0.0",
         "moment-timezone": "~0.5.33",
         "redis": "^2.8.0",
+        "request": "^2.88.2",
         "restify": "~8.5.1"
     },
     "devDependencies": {

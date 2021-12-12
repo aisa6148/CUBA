@@ -66,4 +66,5 @@ const deliverMessages = async (context, messages) => {
 exports.sendRichCard = sendRichCard;
 exports.send = send;
 exports.deliverMessages = deliverMessages;
+exports.card = card
 

@@ -10,7 +10,8 @@ const {
     createBotFrameworkAuthenticationFromConfiguration,
     InputHints,
     MemoryStorage,
-    UserState
+    UserState,
+    ActivityTypes
 } = require('botbuilder');
 
 const { FlightBookingRecognizer } = require('./dialogs/flightBookingRecognizer');
@@ -38,27 +39,30 @@ const adapter = new CloudAdapter(botFrameworkAuthentication);
 
 // Catch-all for errors.
 const onTurnErrorHandler = async (context, error) => {
-    // This check writes out errors to console log .vs. app insights.
-    // NOTE: In production environment, you should consider logging this to Azure
-    //       application insights. See https://aka.ms/bottelemetry for telemetry
-    //       configuration instructions.
-    console.error(`\n [onTurnError] unhandled error: ${ error }`);
+	if (context.activity.type === ActivityTypes.Message) {
 
-    // Send a trace activity, which will be displayed in Bot Framework Emulator
-    await context.sendTraceActivity(
-        'OnTurnError Trace',
-        `${ error }`,
-        'https://www.botframework.com/schemas/error',
-        'TurnError'
-    );
+        // This check writes out errors to console log .vs. app insights.
+        // NOTE: In production environment, you should consider logging this to Azure
+        //       application insights. See https://aka.ms/bottelemetry for telemetry
+        //       configuration instructions.
+        console.error(`\n [onTurnError] unhandled error: ${ error }`);
 
-    // Send a message to the user
-    let onTurnErrorMessage = 'The bot encountered an error or bug.';
-    await context.sendActivity(onTurnErrorMessage, onTurnErrorMessage, InputHints.ExpectingInput);
-    onTurnErrorMessage = 'To continue to run this bot, please fix the bot source code.';
-    await context.sendActivity(onTurnErrorMessage, onTurnErrorMessage, InputHints.ExpectingInput);
-    // Clear out state
-    await conversationState.delete(context);
+        // Send a trace activity, which will be displayed in Bot Framework Emulator
+        await context.sendTraceActivity(
+            'OnTurnError Trace',
+            `${ error }`,
+            'https://www.botframework.com/schemas/error',
+            'TurnError'
+        );
+
+        // Send a message to the user
+        let onTurnErrorMessage = 'The bot encountered an error or bug.';
+        await context.sendActivity(onTurnErrorMessage, onTurnErrorMessage, InputHints.ExpectingInput);
+        onTurnErrorMessage = 'To continue to run this bot, please fix the bot source code.';
+        await context.sendActivity(onTurnErrorMessage, onTurnErrorMessage, InputHints.ExpectingInput);
+        // Clear out state
+        await conversationState.delete(context);
+    }
 };
 
 // Set the onTurnError for the singleton CloudAdapter.

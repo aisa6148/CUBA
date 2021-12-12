@@ -2,20 +2,19 @@
 // Licensed under the MIT License.
 
 const { TimexProperty } = require('@microsoft/recognizers-text-data-types-timex-expression');
-const { MessageFactory, InputHints } = require('botbuilder');
+const { MessageFactory, InputHints, ActivityTypes } = require('botbuilder');
 const { LuisRecognizer } = require('botbuilder-ai');
 const { ComponentDialog, DialogSet, DialogTurnStatus, TextPrompt, WaterfallDialog } = require('botbuilder-dialogs');
 const helperfunction = require('../helper.functions');
 const { CalendarDialog } = require('../dialogs/calendarDialog');
 const { WeatherDialog } = require('../dialogs/weatherDialog');
-const { DirectionsDialog } = require('../dialogs/directionsDialog');
 const { LuisMap } = require('./luisMap.dialog')
 
 const MAIN_WATERFALL_DIALOG = 'mainWaterfallDialog';
 
 const findTerm = (string, substring) => {
-    if (string.includes(substring)){
-      return string;
+    if (string.includes(substring)) {
+        return string;
     }
 };
 
@@ -37,7 +36,6 @@ class MainDialog extends ComponentDialog {
             ]));
         this.addDialog(new CalendarDialog('CalendarDialog'));
         this.addDialog(new WeatherDialog('WeatherDialog'));
-        this.addDialog(new DirectionsDialog('DirectionsDialog'));
 
         this.initialDialogId = MAIN_WATERFALL_DIALOG;
     }
@@ -61,64 +59,65 @@ class MainDialog extends ComponentDialog {
 
     async actStep(stepContext) {
         const text = stepContext.context.activity.text;
-        if (text.match(/^#[0-9a-zA-Z_#]+$/)) {
-            const split = text.trim().split('#');
-            if (split.length < 3) {
-                // do nothing
-            } else {
-                const intent = split[2];
-                const entities = [];
-                if (split.length > 3) {
-                    entities.push({
-                        entity: split[3],
-                        type: split[3],
-                        score: 1,
+        if (!stepContext.context.responded) {
+            if (text.match(/^#[0-9a-zA-Z_#]+$/)) {
+                const split = text.trim().split('#');
+                if (split.length < 3) {
+                    // do nothing
+                } else {
+                    const intent = split[2];
+                    const entities = [];
+                    if (split.length > 3) {
+                        entities.push({
+                            entity: split[3],
+                            type: split[3],
+                            score: 1,
+                        });
+                    }
+                    await stepContext.beginDialog('LuisMap', {
+                        intent,
+                        entities,
                     });
                 }
-                await stepContext.beginDialog('LuisMap', {
-                    intent,
-                    entities,
-                });
-            }
-        } else {
-            const luisResult = await this.luisRecognizer.executeLuisQuery(stepContext.context);
-            switch (LuisRecognizer.topIntent(luisResult)) {
-            case 'Greeting':
-                const greeting = 'Hey there! I am the CU Boulder Assistant at your service! I can help you out with the following, click on an option and get started:'
-                await helperfunction.sendRichCard(
-                    stepContext.context,
-                    greeting,
-                    [
-                        { "display": "Today's Calendar", "value": "#Greeting#Calendar" },
-                        { "display": "FAQ", "value": "#CUInfo#FAQ" },
-                        { "display": "Buff Card Balance", "value": "#BuffCard#BuffCardBalance" },
-                        { "display": "Weather Today", "value": "#Weather#Weather" },
-                        { "display": "Directions", "value": "#Directions#GetDirections" },
-                    ]
-                  );
-                break;
-            case findTerm(LuisRecognizer.topIntent(luisResult), 'Calendar'): {
-                    return await stepContext.replaceDialog('CalendarDialog');
+            } else {
+                if (!stepContext.context.responded) {
+                    const luisResult = await this.luisRecognizer.executeLuisQuery(stepContext.context);
+                    switch (LuisRecognizer.topIntent(luisResult)) {
+                        case 'Greeting':
+                            const greeting = 'Hey there! I am the CU Boulder Assistant at your service! I can help you out with the following, click on an option and get started:'
+                            await helperfunction.sendRichCard(
+                                stepContext.context,
+                                greeting,
+                                [
+                                    { "display": "Today's Calendar", "value": "#Greeting#Calendar" },
+                                    { "display": "FAQ", "value": "#CUInfo#FAQ" },
+                                    { "display": "Buff Card Balance", "value": "#BuffCard#BuffCardBalance" },
+                                    { "display": "Weather Today", "value": "#Weather#Weather" },
+                                    { "display": "Directions", "value": "#GetDirections#GetDirections" },
+                                ]
+                            );
+                            break;
+                        case findTerm(LuisRecognizer.topIntent(luisResult), 'Calendar'): {
+                            return await stepContext.replaceDialog('CalendarDialog');
+                        }
+                        case findTerm(LuisRecognizer.topIntent(luisResult), 'Weather'): {
+                            return await stepContext.replaceDialog('WeatherDialog');
+                        }
+                        case 'BuffCardBalance': {
+                            await stepContext.context.sendActivity('On it! Fetching your details...')
+                            await new Promise(resolve => setTimeout(() => resolve(
+                                stepContext.context.sendActivity('Name: Aishwarya Satwani\n\nBalance: $75.23')
+                            ), 6000));
+                            break;
+                        }
+
+                        default: {
+                            // Catch all for unhandled intents
+                            const didntUnderstandMessageText = `Sorry, I didn't get that. Please try asking in a different way`;
+                            await stepContext.context.sendActivity(didntUnderstandMessageText, didntUnderstandMessageText, InputHints.IgnoringInput);
+                        }
+                    }
                 }
-            case findTerm(LuisRecognizer.topIntent(luisResult), 'Weather'): {
-                    return await stepContext.replaceDialog('WeatherDialog');
-                }
-            case 'BuffCardBalance': {
-                await stepContext.context.sendActivity('On it! Fetching your details...')
-                await new Promise(resolve => setTimeout(() => resolve(
-                    stepContext.context.sendActivity('Name: Aishwarya Satwani\n\nBalance: $75.23')
-                ), 6000));                 
-                break;
-            }
-            case 'GetDirections': {
-                return await stepContext.replaceDialog('DirectionsDialog');
-            }
-    
-            default: {
-                // Catch all for unhandled intents
-                const didntUnderstandMessageText = `Sorry, I didn't get that. Please try asking in a different way`;
-                await stepContext.context.sendActivity(didntUnderstandMessageText, didntUnderstandMessageText, InputHints.IgnoringInput);
-            }
             }
         }
 
